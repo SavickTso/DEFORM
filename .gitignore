@@ -1,0 +1,9 @@
+/.venv/*
+
+/save_model/*
+/__pycache__/*
+/data_set/*
+/loss_record/*
+
+/results/*
+/test_results/*

@@ -379,6 +379,7 @@ def train(DLO_type, train_set_number, eval_set_number, train_time_horizon, eval_
                 with torch.no_grad():
                     eval_time = 0
                     for eval_data in eval_bar:
+                        dir_path = "/home/cao/DEFORM/results"
                         init_direction = torch.tensor(((0., 0.6, 0.8), (0., .0, 1.))).to(device).unsqueeze(dim=0)
                         eval_previous_vertices, eval_vertices, eval_target_vertices = eval_data
                         inputs = eval_target_vertices[:, :, clamped_selection]
@@ -390,6 +391,9 @@ def train(DLO_type, train_set_number, eval_set_number, train_time_horizon, eval_
                             with torch.no_grad():
                                 if traj_num == 0:
                                     rest_edges = computeEdges(eval_vertices[:, traj_num])
+                                    print("shape of mu0 inputs ")
+                                    print(rest_edges[:, 0].float().shape)
+                                    print(init_direction.repeat(eval_batch, 1, 1)[:, 0].shape)
                                     m_u0 = DEFORM_func.compute_u0(rest_edges[:, 0].float(), init_direction.repeat(eval_batch, 1, 1)[:, 0])
                                     current_v = (eval_vertices[:, traj_num] - eval_previous_vertices[:, traj_num]).div(DEFORM_sim.dt)
                                     m_restEdgeL = DEFORM_sim.m_restEdgeL.repeat(eval_batch, 1)
@@ -399,18 +403,18 @@ def train(DLO_type, train_set_number, eval_set_number, train_time_horizon, eval_
                                     eval_loss += traj_loss
 
                                     """visualization: store image into local file for visualization"""
-                                    # init_vis_vert = torch.Tensor.numpy(init_pred_vert_0.to('cpu'))
-                                    # vis_gt_vert = torch.Tensor.numpy(eval_target_vertices[:, traj_num].to('cpu'))
-                                    # fig = plt.figure()
-                                    # ax = fig.add_subplot(111, projection='3d')
-                                    # # ax.scatter(X_obs, Y_obs, Z_obs, label='Obstacle', s=4, c='orange')
-                                    # ax.plot(init_vis_vert[0, :, 0], init_vis_vert[0, :, 1], init_vis_vert[0, :, 2], label='pred')
-                                    # ax.plot(vis_gt_vert[0, :, 0], vis_gt_vert[0, :, 1], vis_gt_vert[0, :, 2], label='gt')
-                                    # ax.set_xlim(-.5, 1.)
-                                    # ax.set_ylim(-1, .5)
-                                    # ax.set_zlim(0, 1.)
-                                    # plt.legend()
-                                    # plt.savefig(dir_path + '/%s.png' % (traj_num))
+                                    init_vis_vert = torch.Tensor.numpy(init_pred_vert_0.to('cpu'))
+                                    vis_gt_vert = torch.Tensor.numpy(eval_target_vertices[:, traj_num].to('cpu'))
+                                    fig = plt.figure()
+                                    ax = fig.add_subplot(111, projection='3d')
+                                    # ax.scatter(X_obs, Y_obs, Z_obs, label='Obstacle', s=4, c='orange')
+                                    ax.plot(init_vis_vert[0, :, 0], init_vis_vert[0, :, 1], init_vis_vert[0, :, 2], label='pred')
+                                    ax.plot(vis_gt_vert[0, :, 0], vis_gt_vert[0, :, 1], vis_gt_vert[0, :, 2], label='gt')
+                                    ax.set_xlim(-.5, 1.)
+                                    ax.set_ylim(-1, .5)
+                                    ax.set_zlim(0, 1.)
+                                    plt.legend()
+                                    plt.savefig(dir_path + '/%s.png' % (traj_num))
 
                                 if traj_num == 1:
                                     previous_edge = computeEdges(eval_previous_vertices[:, traj_num])
@@ -421,18 +425,18 @@ def train(DLO_type, train_set_number, eval_set_number, train_time_horizon, eval_
                                     traj_loss = loss_func(pred_vert, eval_target_vertices[:, traj_num])
                                     eval_loss += traj_loss
 
-                                    # vis_pred_vert = torch.Tensor.numpy(pred_vert.to('cpu'))
-                                    # vis_gt_vert = torch.Tensor.numpy(eval_target_vertices[:, traj_num].to('cpu'))
-                                    # fig = plt.figure()
-                                    # ax = fig.add_subplot(111, projection='3d')
-                                    # # ax.scatter(X_obs, Y_obs, Z_obs, label='Obstacle', s=4, c='orange')
-                                    # ax.plot(vis_pred_vert[0, :, 0], vis_pred_vert[0, :, 1], vis_pred_vert[0, :, 2], label='pred')
-                                    # ax.plot(vis_gt_vert[0, :, 0], vis_gt_vert[0, :, 1], vis_gt_vert[0, :, 2], label='gt')
-                                    # ax.set_xlim(-.5, 1.)
-                                    # ax.set_ylim(-1, .5)
-                                    # ax.set_zlim(0, 1.)
-                                    # plt.legend()
-                                    # plt.savefig(dir_path + '/%s.png' % (traj_num))
+                                    vis_pred_vert = torch.Tensor.numpy(pred_vert.to('cpu'))
+                                    vis_gt_vert = torch.Tensor.numpy(eval_target_vertices[:, traj_num].to('cpu'))
+                                    fig = plt.figure()
+                                    ax = fig.add_subplot(111, projection='3d')
+                                    # ax.scatter(X_obs, Y_obs, Z_obs, label='Obstacle', s=4, c='orange')
+                                    ax.plot(vis_pred_vert[0, :, 0], vis_pred_vert[0, :, 1], vis_pred_vert[0, :, 2], label='pred')
+                                    ax.plot(vis_gt_vert[0, :, 0], vis_gt_vert[0, :, 1], vis_gt_vert[0, :, 2], label='gt')
+                                    ax.set_xlim(-.5, 1.)
+                                    ax.set_ylim(-1, .5)
+                                    ax.set_zlim(0, 1.)
+                                    plt.legend()
+                                    plt.savefig(dir_path + '/%s.png' % (traj_num))
 
                                 if traj_num >= 2:
                                     previous_vert = vert.clone()
@@ -443,21 +447,22 @@ def train(DLO_type, train_set_number, eval_set_number, train_time_horizon, eval_
                                     current_edges = computeEdges(vert)
                                     m_u0 = DEFORM_func.parallelTransportFrame(previous_edge[:, 0], current_edges[:, 0],m_u0)
                                     pred_vert, current_v, theta_full = DEFORM_sim(vert, current_v,init_direction.repeat(eval_batch, 1, 1),clamped_index, m_u0, inputs[:, traj_num], clamped_selection, theta_full, mode = "evaluation")
+                                    print("pred_vert.shape", pred_vert.shape)
                                     traj_loss = loss_func(pred_vert, eval_target_vertices[:, traj_num])
                                     eval_loss += traj_loss
 
-                                    # vis_pred_vert = torch.Tensor.numpy(pred_vert.to('cpu'))
-                                    # vis_gt_vert = torch.Tensor.numpy(eval_target_vertices[:, traj_num].to('cpu'))
-                                    # fig = plt.figure()
-                                    # ax = fig.add_subplot(111, projection='3d')
-                                    # # ax.scatter(X_obs, Y_obs, Z_obs, label='Obstacle', s=4, c='orange')
-                                    # ax.plot(vis_pred_vert[0, :, 0], vis_pred_vert[0, :, 1], vis_pred_vert[0, :, 2],label='pred')
-                                    # ax.plot(vis_gt_vert[0, :, 0], vis_gt_vert[0, :, 1], vis_gt_vert[0, :, 2], label='gt')
-                                    # ax.set_xlim(-.5, 1.)
-                                    # ax.set_ylim(-1, .5)
-                                    # ax.set_zlim(0, 1.)
-                                    # plt.legend()
-                                    # plt.savefig(dir_path + '/%s.png' % (traj_num))
+                                    vis_pred_vert = torch.Tensor.numpy(pred_vert.to('cpu'))
+                                    vis_gt_vert = torch.Tensor.numpy(eval_target_vertices[:, traj_num].to('cpu'))
+                                    fig = plt.figure()
+                                    ax = fig.add_subplot(111, projection='3d')
+                                    # ax.scatter(X_obs, Y_obs, Z_obs, label='Obstacle', s=4, c='orange')
+                                    ax.plot(vis_pred_vert[0, :, 0], vis_pred_vert[0, :, 1], vis_pred_vert[0, :, 2],label='pred')
+                                    ax.plot(vis_gt_vert[0, :, 0], vis_gt_vert[0, :, 1], vis_gt_vert[0, :, 2], label='gt')
+                                    ax.set_xlim(-.5, 1.)
+                                    ax.set_ylim(-1, .5)
+                                    ax.set_zlim(0, 1.)
+                                    plt.legend()
+                                    plt.savefig(dir_path + '/%s.png' % (traj_num))
 
                             eval_time += 1
                 eval_losses.append(eval_loss.cpu().detach().numpy() / (eval_time_horizon * part_eval // eval_batch))
