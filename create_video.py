@@ -5,7 +5,7 @@ import os
 image_dir = '/home/cao/DEFORM/test_results'
 
 # Video output settings
-output_video_path = 'output_video.mp4'
+output_video_path = 'DEFORM_flatcable.mp4'
 frame_rate = 30  # frames per second
 
 # Get sorted list of image file paths
