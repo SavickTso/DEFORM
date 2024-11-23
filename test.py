@@ -1,5 +1,6 @@
 import argparse
 import glob
+import json
 import os
 import pickle
 import random
@@ -77,6 +78,7 @@ def test(DEFORM_func, DEFORM_sim, device):
         history_positions[:, 2:, :, :],
     )
 
+    loss_total = []
     with torch.no_grad():
         eval_time = 0
         eval_batch = 1
@@ -246,7 +248,8 @@ def test(DEFORM_func, DEFORM_sim, device):
                     plt.legend()
                     plt.savefig(dir_path + "/%s.png" % (traj_num))
 
-                    if traj_num == 240:
+                    if traj_num > 150 and traj_num < 235:
+                        loss_frame_tmp = []
                         for step in range(20):
                             previous_vert = vert.clone()
                             vert = pred_vert.clone()
@@ -275,29 +278,35 @@ def test(DEFORM_func, DEFORM_sim, device):
                             vis_gt_vert = torch.Tensor.numpy(
                                 eval_target_vertices[:, traj_num + step].to("cpu")
                             )
-                            fig = plt.figure()
-                            ax = fig.add_subplot(111, projection="3d")
-                            # ax.scatter(X_obs, Y_obs, Z_obs, label='Obstacle', s=4, c='orange')
-                            ax.plot(
-                                vis_pred_vert[0, :, 0],
-                                vis_pred_vert[0, :, 1],
-                                vis_pred_vert[0, :, 2],
-                                label="pred",
-                            )
-                            ax.plot(
-                                vis_gt_vert[0, :, 0],
-                                vis_gt_vert[0, :, 1],
-                                vis_gt_vert[0, :, 2],
-                                label="tracking results",
-                            )
-                            ax.set_xlim(-0.5, 1.0)
-                            ax.set_ylim(-1, 0.5)
-                            ax.set_zlim(0, 1.0)
-                            plt.legend()
-                            multipred_path = "/home/cao/DEFORM/multi_pred"
-                            plt.savefig(multipred_path + "/%s.png" % (step))
+                            # compute numpy ndarray difference and compute loss
+                            loss = float(np.linalg.norm(vis_pred_vert - vis_gt_vert))
+                            loss_frame_tmp.append(loss)
 
+                            # fig = plt.figure()
+                            # ax = fig.add_subplot(111, projection="3d")
+                            # # ax.scatter(X_obs, Y_obs, Z_obs, label='Obstacle', s=4, c='orange')
+                            # ax.plot(
+                            #     vis_pred_vert[0, :, 0],
+                            #     vis_pred_vert[0, :, 1],
+                            #     vis_pred_vert[0, :, 2],
+                            #     label="pred",
+                            # )
+                            # ax.plot(
+                            #     vis_gt_vert[0, :, 0],
+                            #     vis_gt_vert[0, :, 1],
+                            #     vis_gt_vert[0, :, 2],
+                            #     label="tracking results",
+                            # )
+                            # ax.set_xlim(-0.5, 1.0)
+                            # ax.set_ylim(-1, 0.5)
+                            # ax.set_zlim(0, 1.0)
+                            # plt.legend()
+                            # multipred_path = "/home/cao/DEFORM/multi_pred"
+                            # plt.savefig(multipred_path + "/%s.png" % (step))
+                        loss_total.append(loss_frame_tmp)
             eval_time += 1
+        with open("./loss_total_150-235.json", "w") as file:
+            json.dump(loss_total, file, indent=4)
 
 
 if __name__ == "__main__":
