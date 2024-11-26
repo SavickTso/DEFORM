@@ -249,6 +249,7 @@ def test(DEFORM_func, DEFORM_sim, device):
                     plt.savefig(dir_path + "/%s.png" % (traj_num))
 
                     if traj_num > 150 and traj_num < 235:
+                        # if traj_num == 205:
                         loss_frame_tmp = []
                         for step in range(20):
                             previous_vert = vert.clone()
@@ -305,8 +306,8 @@ def test(DEFORM_func, DEFORM_sim, device):
                             # plt.savefig(multipred_path + "/%s.png" % (step))
                         loss_total.append(loss_frame_tmp)
             eval_time += 1
-        with open("./loss_total_150-235.json", "w") as file:
-            json.dump(loss_total, file, indent=4)
+        # with open("./loss_total_150-235.json", "w") as file:
+        #     json.dump(loss_total, file, indent=4)
 
 
 if __name__ == "__main__":
